@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  # RABBITMQ
+  rabbitmq:
+    restart: always
+    image: rabbitmq:3.9-alpine
+    container_name: rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - "6378:6379"
+    networks:
+      - glob-net
+  django:
+    restart: always
+    container_name: django
+    command: [ 'python', 'manage.py', 'runserver','0.0.0.0:8000' ]
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    #    expose:
+    #      - 8000
+    depends_on:
+      - rabbitmq
+    networks:
+      - glob-net
+
+  # CELERY WORKER & BEAT
+  celery:
+    restart: always
+    container_name: celery
+    command: [ 'celery', '-A', 'server','worker','-l','info' ]
+    build: .
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    depends_on:
+      - rabbitmq
+    networks:
+      - glob-net
+
+networks:
+  glob-net:
+    driver: bridge
+
+volumes:
+  server-data: { }
+  rabbitmq-data: { }
