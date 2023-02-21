@@ -26,4 +26,4 @@ def Fibonacci(number):
 @shared_task(name='fibonacci')
 def fibonacci_task(data):
     number = data['number']
-    return Fibonacci(number)
+    return f'RESULT IS - {Fibonacci(number)}'
